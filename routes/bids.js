@@ -50,16 +50,22 @@ router.get('/mine/list', auth, async (req, res) => {
 })
 
 // ✅ GET bids for a gig (owner sees applicants)
+// ✅ GET bids for a gig (owner sees applicants) — with applicant name
 router.get('/gig/:gigId', auth, async (req, res) => {
   try {
     const { gigId } = req.params
-    const bids = await Bid.find({ gigId }).sort({ createdAt: -1 })
+
+    const bids = await Bid.find({ gigId })
+      .sort({ createdAt: -1 })
+      .populate('freelancerId', 'name email')  // ✅ THIS LINE
+
     res.json({ bids })
   } catch (err) {
     console.error('GET /api/bids/gig/:gigId ERROR:', err)
     res.status(500).json({ message: err.message || 'Server error' })
   }
 })
+
 
 // ✅ HIRE one bid
 router.patch('/:bidId/hire', auth, async (req, res) => {
