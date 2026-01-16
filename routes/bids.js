@@ -127,6 +127,19 @@ router.patch('/:bidId/hire', auth, async (req, res) => {
   }
 })
 
+router.get('/mine', auth, async (req, res) => {
+  try {
+    const bids = await Bid.find({ applicantId: req.userId })
+      .sort({ createdAt: -1 })
+      .select('gigId status bidAmount message createdAt')
+
+    res.json({ bids })
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+
 
 
 module.exports = router
