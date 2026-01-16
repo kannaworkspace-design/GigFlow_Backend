@@ -14,14 +14,15 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ message: 'gigId, bidAmount, message are required' })
     }
 
-    const existing = await Bid.findOne({ gigId, applicantId: req.userId })
+    // prevent applying twice
+    const existing = await Bid.findOne({ gigId, freelancerId: req.userId })
     if (existing) {
       return res.status(400).json({ message: 'You already applied for this gig' })
     }
 
     const bid = await Bid.create({
       gigId,
-      applicantId: req.userId,
+      freelancerId: req.userId, // ✅ FIXED
       bidAmount,
       message,
       status: 'pending',
@@ -37,7 +38,7 @@ router.post('/', auth, async (req, res) => {
 // ✅ MY BIDS (show statuses for my applications)
 router.get('/mine/list', auth, async (req, res) => {
   try {
-    const bids = await Bid.find({ applicantId: req.userId })
+    const bids = await Bid.find({ freelancerId: req.userId }) // ✅ FIXED
       .sort({ createdAt: -1 })
       .select('gigId status bidAmount message createdAt')
 
@@ -48,7 +49,7 @@ router.get('/mine/list', auth, async (req, res) => {
   }
 })
 
-// ✅ GET bids for a gig (owner sees applicants) — SAFE PATH
+// ✅ GET bids for a gig (owner sees applicants)
 router.get('/gig/:gigId', auth, async (req, res) => {
   try {
     const { gigId } = req.params
